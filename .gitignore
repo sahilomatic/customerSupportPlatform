@@ -1,1 +1,17 @@
-package-lock.json
+# Ignore environment variables files
+backend/app/.env
+
+# Node dependencies lock file (optional)
+# Usually, it's recommended to commit package-lock.json, but if you want to ignore:
+# package-lock.json
+
+# Node modules (if any node stuff inside frontend or elsewhere)
+node_modules/
+
+# Build folders (if any)
+build/
+dist/
+
+# OS specific files (optional)
+.DS_Store
+Thumbs.db
