@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/customerSupportPlatform/static/css/main.f855e6bc.css",
+    "main.js": "/customerSupportPlatform/static/js/main.b9083a4a.js",
+    "static/js/453.670e15c7.chunk.js": "/customerSupportPlatform/static/js/453.670e15c7.chunk.js",
+    "static/media/sonipixeLogo2.png": "/customerSupportPlatform/static/media/sonipixeLogo2.33ff1c395d61367b64bc.png",
+    "index.html": "/customerSupportPlatform/index.html",
+    "main.f855e6bc.css.map": "/customerSupportPlatform/static/css/main.f855e6bc.css.map",
+    "main.b9083a4a.js.map": "/customerSupportPlatform/static/js/main.b9083a4a.js.map",
+    "453.670e15c7.chunk.js.map": "/customerSupportPlatform/static/js/453.670e15c7.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.f855e6bc.css",
+    "static/js/main.b9083a4a.js"
+  ]
+}
