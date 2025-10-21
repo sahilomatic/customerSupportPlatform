@@ -26,9 +26,9 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  Grid,
   Tooltip,
 } from "@mui/material";
+import { Grid } from "@mui/material"; 
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -58,6 +58,14 @@ const ViewTickets: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>("All");
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [detailsDialog, setDetailsDialog] = useState(false);
+
+  // Column-level filters
+  const [columnFilters, setColumnFilters] = useState({
+    ticketNumber: "",
+    name: "",
+    mobile: "",
+    eventDate: "",
+  });
 
   const fetchTickets = async () => {
     setLoading(true);
@@ -96,8 +104,30 @@ const ViewTickets: React.FC = () => {
       );
     }
 
+    // Apply column-level filters
+    if (columnFilters.ticketNumber) {
+      filtered = filtered.filter((ticket) =>
+        ticket.ticket_number.toLowerCase().includes(columnFilters.ticketNumber.toLowerCase())
+      );
+    }
+    if (columnFilters.name) {
+      filtered = filtered.filter((ticket) =>
+        ticket.name.toLowerCase().includes(columnFilters.name.toLowerCase())
+      );
+    }
+    if (columnFilters.mobile) {
+      filtered = filtered.filter((ticket) =>
+        ticket.mobile_number.includes(columnFilters.mobile)
+      );
+    }
+    if (columnFilters.eventDate) {
+      filtered = filtered.filter((ticket) =>
+        ticket.event_date.includes(columnFilters.eventDate)
+      );
+    }
+
     setFilteredTickets(filtered);
-  }, [searchTerm, statusFilter, tickets]);
+  }, [searchTerm, statusFilter, tickets, columnFilters]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -177,7 +207,7 @@ const ViewTickets: React.FC = () => {
       <Card elevation={3} sx={{ mb: 3 }}>
         <CardContent>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
                 placeholder="Search by ticket number, name, mobile, or pincode"
@@ -192,7 +222,7 @@ const ViewTickets: React.FC = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <FormControl fullWidth>
                 <InputLabel>Filter by Status</InputLabel>
                 <Select
@@ -227,6 +257,83 @@ const ViewTickets: React.FC = () => {
                 <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
                 <TableCell sx={{ fontWeight: "bold" }}>Created</TableCell>
                 <TableCell sx={{ fontWeight: "bold" }}>Actions</TableCell>
+              </TableRow>
+              {/* Column-level filter row */}
+              <TableRow sx={{ backgroundColor: "#fafafa" }}>
+                <TableCell sx={{ py: 1 }}>
+                  <TextField
+                    size="small"
+                    placeholder="Filter..."
+                    value={columnFilters.ticketNumber}
+                    onChange={(e) =>
+                      setColumnFilters({ ...columnFilters, ticketNumber: e.target.value })
+                    }
+                    variant="outlined"
+                    fullWidth
+                    sx={{ minWidth: 120 }}
+                  />
+                </TableCell>
+                <TableCell sx={{ py: 1 }}>
+                  <TextField
+                    size="small"
+                    placeholder="Filter..."
+                    value={columnFilters.name}
+                    onChange={(e) =>
+                      setColumnFilters({ ...columnFilters, name: e.target.value })
+                    }
+                    variant="outlined"
+                    fullWidth
+                    sx={{ minWidth: 120 }}
+                  />
+                </TableCell>
+                <TableCell sx={{ py: 1 }}>
+                  <TextField
+                    size="small"
+                    placeholder="Filter..."
+                    value={columnFilters.mobile}
+                    onChange={(e) =>
+                      setColumnFilters({ ...columnFilters, mobile: e.target.value })
+                    }
+                    variant="outlined"
+                    fullWidth
+                    sx={{ minWidth: 120 }}
+                  />
+                </TableCell>
+                <TableCell sx={{ py: 1 }}>
+                  <TextField
+                    size="small"
+                    placeholder="Filter..."
+                    value={columnFilters.eventDate}
+                    onChange={(e) =>
+                      setColumnFilters({ ...columnFilters, eventDate: e.target.value })
+                    }
+                    variant="outlined"
+                    fullWidth
+                    sx={{ minWidth: 120 }}
+                  />
+                </TableCell>
+                <TableCell sx={{ py: 1 }}>
+                  {/* Status column - no filter needed as it's already filtered above */}
+                </TableCell>
+                <TableCell sx={{ py: 1 }}>
+                  {/* Created column - no filter */}
+                </TableCell>
+                <TableCell sx={{ py: 1 }}>
+                  <Button
+                    size="small"
+                    onClick={() =>
+                      setColumnFilters({
+                        ticketNumber: "",
+                        name: "",
+                        mobile: "",
+                        eventDate: "",
+                      })
+                    }
+                    sx={{ fontSize: "0.7rem" }}
+                  >
+                    Clear
+                  </Button>
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -311,7 +418,7 @@ const ViewTickets: React.FC = () => {
             </DialogTitle>
             <DialogContent dividers>
               <Grid container spacing={2}>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <Paper sx={{ p: 2, backgroundColor: "#f5f5f5" }}>
                     <Typography variant="caption" color="text.secondary">
                       Ticket Number
@@ -324,37 +431,37 @@ const ViewTickets: React.FC = () => {
                     </Typography>
                   </Paper>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <Typography variant="caption" color="text.secondary">
                     Name
                   </Typography>
                   <Typography variant="body1">{selectedTicket.name}</Typography>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <Typography variant="caption" color="text.secondary">
                     Father's Name
                   </Typography>
                   <Typography variant="body1">{selectedTicket.father_name}</Typography>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <Typography variant="caption" color="text.secondary">
                     Address
                   </Typography>
                   <Typography variant="body1">{selectedTicket.address}</Typography>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <Typography variant="caption" color="text.secondary">
                     Pincode
                   </Typography>
                   <Typography variant="body1">{selectedTicket.pincode}</Typography>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <Typography variant="caption" color="text.secondary">
                     Mobile Number
                   </Typography>
                   <Typography variant="body1">{selectedTicket.mobile_number}</Typography>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <Typography variant="caption" color="text.secondary">
                     Event Date
                   </Typography>
@@ -362,7 +469,7 @@ const ViewTickets: React.FC = () => {
                     {formatEventDate(selectedTicket.event_date)}
                   </Typography>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <Typography variant="caption" color="text.secondary">
                     Query
                   </Typography>
@@ -370,13 +477,13 @@ const ViewTickets: React.FC = () => {
                     <Typography variant="body1">{selectedTicket.query}</Typography>
                   </Paper>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <Typography variant="caption" color="text.secondary">
                     Ticket Raised On
                   </Typography>
                   <Typography variant="body2">{formatDate(selectedTicket.created_at)}</Typography>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <Typography variant="caption" color="text.secondary">
                     Last Updated
                   </Typography>

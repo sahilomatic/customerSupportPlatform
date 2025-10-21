@@ -1,33 +1,60 @@
-import React, { useState } from "react";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
 import AppHeader from "./components/AppHeader";
 import WhatsappMessenger from "./components/WhatsappMessenger";
 import RaiseTicket from "./components/RaiseTicket";
 import ViewTickets from "./components/ViewTickets";
+import Login from "./components/Login";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { Box } from "@mui/material";
 
-type Page = "messenger" | "raise-ticket" | "view-tickets";
-
 const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<Page>("messenger");
-
-  const renderPage = () => {
-    switch (currentPage) {
-      case "messenger":
-        return <WhatsappMessenger />;
-      case "raise-ticket":
-        return <RaiseTicket />;
-      case "view-tickets":
-        return <ViewTickets />;
-      default:
-        return <WhatsappMessenger />;
-    }
-  };
-
   return (
-    <Box sx={{ bgcolor: "#f5f5f5", minHeight: "100vh" }}>
-      <AppHeader currentPage={currentPage} onPageChange={setCurrentPage} />
-      {renderPage()}
-    </Box>
+    <AuthProvider>
+      <Router>
+        <Box sx={{ bgcolor: "#f5f5f5", minHeight: "100vh" }}>
+          <Routes>
+            {/* Public route for raising tickets - Default page */}
+            <Route
+              path="/"
+              element={
+                <>
+                  <AppHeader />
+                  <RaiseTicket />
+                </>
+              }
+            />
+
+            {/* Login route */}
+            <Route path="/login" element={<Login />} />
+
+            {/* Protected routes */}
+            <Route
+              path="/messenger"
+              element={
+                <ProtectedRoute>
+                  <AppHeader />
+                  <WhatsappMessenger />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/view-tickets"
+              element={
+                <ProtectedRoute>
+                  <AppHeader />
+                  <ViewTickets />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Redirect any unknown routes to home */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Box>
+      </Router>
+    </AuthProvider>
   );
 };
 

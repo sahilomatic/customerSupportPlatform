@@ -6,7 +6,6 @@ import {
   TextField,
   Button,
   Typography,
-  Grid,
   Snackbar,
   Alert,
   CircularProgress,
@@ -17,9 +16,12 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
+import { Grid } from "@mui/material"; 
 import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
 import SendIcon from "@mui/icons-material/Send";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import InfoIcon from "@mui/icons-material/Info";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { createTicket } from "../api/api";
 
 const RaiseTicket: React.FC = () => {
@@ -139,6 +141,9 @@ const RaiseTicket: React.FC = () => {
     });
   };
 
+  const gdriveLink = "https://drive.google.com/drive/folders/1acrdWqZU6UXjp5UK5Rr8c08hup6T9BYG?usp=drive_link";
+  const gdriveAlias = "Please download digital pictures from G-drive"
+
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
       <Paper
@@ -164,11 +169,51 @@ const RaiseTicket: React.FC = () => {
         </Box>
       </Paper>
 
+      {/* G-Drive Link Ticker */}
+      {gdriveLink && gdriveAlias && (
+        <Paper
+          elevation={2}
+          sx={{
+            p: 2,
+            mb: 3,
+            borderRadius: 2,
+            background: "linear-gradient(135deg, #f17049ff 0%, #f37439ff 100%)",
+            color: "white",
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            cursor: "pointer",
+            transition: "transform 0.2s",
+            "&:hover": {
+              transform: "translateY(-2px)",
+              boxShadow: 4,
+            },
+          }}
+          onClick={() => window.open(gdriveLink, "_blank")}
+        >
+          <CloudUploadIcon sx={{ fontSize: 32 }} />
+          <Box sx={{ flex: 1 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <InfoIcon sx={{ fontSize: 18 }} />
+              <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
+                Important Notice
+              </Typography>
+            </Box>
+            <Typography variant="body2" sx={{ mt: 0.5 }}>
+              {gdriveAlias}
+            </Typography>
+          </Box>
+          <Typography variant="caption" sx={{ opacity: 0.9 }}>
+            Click to open →
+          </Typography>
+        </Paper>
+      )}
+
       <Card elevation={3}>
         <CardContent sx={{ p: 4 }}>
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label="Full Name"
@@ -182,7 +227,7 @@ const RaiseTicket: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label="Father's Name"
@@ -196,7 +241,7 @@ const RaiseTicket: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <TextField
                   fullWidth
                   label="Address"
@@ -212,7 +257,7 @@ const RaiseTicket: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label="Pincode"
@@ -227,7 +272,7 @@ const RaiseTicket: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   label="Mobile Number"
@@ -241,7 +286,7 @@ const RaiseTicket: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <TextField
                   fullWidth
                   label="Event Date"
@@ -259,7 +304,7 @@ const RaiseTicket: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <TextField
                   fullWidth
                   label="Describe Your Query"
@@ -276,7 +321,7 @@ const RaiseTicket: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Button
                   type="submit"
                   variant="contained"

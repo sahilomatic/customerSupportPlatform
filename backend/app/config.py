@@ -24,7 +24,11 @@ class Settings(BaseSettings):
     
     # Logging
     LOG_LEVEL: str = "INFO"
-    
+
+    # G-Drive Link
+    GDRIVE_LINK: str = "https://drive.google.com/drive/folders/1acrdWqZU6UXjp5UK5Rr8c08hup6T9BYG?usp=drive_link"
+    GDRIVE_ALIAS: str = "Upload Your Event Photos/Videos Here"
+
     class Config:
         env_file = ".env"
         case_sensitive = True
