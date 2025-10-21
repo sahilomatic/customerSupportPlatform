@@ -8,9 +8,12 @@ class Settings(BaseSettings):
     DESCRIPTION: str = "Multi-channel communication API"
     
     # Twilio WhatsApp Config
-    TWILIO_ACCOUNT_SID: Optional[str] = "ACbc4605b05277dade22373380a4056b29"
-    TWILIO_AUTH_TOKEN: Optional[str] = "ef6bbb4c13e299762fc1e717527823c6"
+    TWILIO_ACCOUNT_SID: Optional[str] = None
+    TWILIO_AUTH_TOKEN: Optional[str] = None
     TWILIO_WHATSAPP_FROM: str = "whatsapp:+14155238886"  # Sandbox number
+
+    # Twilio SMS Config
+    TWILIO_PHONE_NUMBER: Optional[str] = None  # Your Twilio phone number for SMS (e.g., +1234567890)
     
     # File Upload Settings
     MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10MB
