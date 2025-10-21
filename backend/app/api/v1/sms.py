@@ -1,5 +1,5 @@
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException, Depends
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime
 
@@ -13,9 +13,9 @@ router = APIRouter()
 class BulkSMSResult(BaseModel):
     number: str
     status: str
-    error: str = None
-    timestamp: str = None
-    sid: str = None
+    error: Optional[str] = None
+    timestamp: Optional[str] = None
+    sid: Optional[str] = None
 
 class BulkSMSResponse(BaseModel):
     status: str
@@ -29,8 +29,8 @@ class BulkSMSResponse(BaseModel):
 class SingleSMSResult(BaseModel):
     number: str
     status: str
-    error: str = None
-    sid: str = None
+    error: Optional[str] = None
+    sid: Optional[str] = None
 
 # -------------------- Dependency --------------------
 def get_sms_service() -> SMSService:
