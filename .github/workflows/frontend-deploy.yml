@@ -1,33 +1,38 @@
-name: Deploy React App to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches:
-      - master  # or "main" if your default branch is "main"
+      - master
+  workflow_dispatch:  # Allow manual trigger
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     defaults:
       run:
-        working-directory: frontend/frontend  # Important because your frontend is in a subfolder
+        working-directory: frontend/frontend  # Frontend is at frontend/frontend/
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: frontend/frontend/package-lock.json
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
 
       - name: Deploy to GitHub Pages
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          npm install -g gh-pages
-          npm run deploy
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./frontend/frontend/dist  # Vite builds to dist folder
