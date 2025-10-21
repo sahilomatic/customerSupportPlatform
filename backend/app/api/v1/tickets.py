@@ -8,6 +8,7 @@ import string
 
 from app.database import get_db, engine, Base
 from app.models.ticket import Ticket
+from app.models.comment import Comment
 
 router = APIRouter()
 
@@ -68,6 +69,36 @@ class TicketResponse(BaseModel):
 class TicketListResponse(BaseModel):
     total: int
     tickets: List[TicketResponse]
+
+class CommentCreate(BaseModel):
+    author_name: str
+    comment_text: str
+
+    @validator('author_name', 'comment_text')
+    def not_empty(cls, v):
+        if not v.strip():
+            raise ValueError('Field cannot be empty')
+        return v
+
+class CommentResponse(BaseModel):
+    id: int
+    ticket_id: int
+    author_name: str
+    comment_text: str
+    created_at: str
+
+class CommentsListResponse(BaseModel):
+    total: int
+    comments: List[CommentResponse]
+
+class StatusUpdateRequest(BaseModel):
+    status: str
+
+    @validator('status')
+    def validate_status(cls, v):
+        if v not in ["Open", "In Progress", "Closed"]:
+            raise ValueError('Status must be Open, In Progress, or Closed')
+        return v
 
 def generate_ticket_number():
     """Generate unique ticket number like TKT-YYYYMMDD-XXXX"""
@@ -157,25 +188,70 @@ async def get_ticket(ticket_number: str, db: Session = Depends(get_db)):
 
     return TicketResponse(**ticket.to_dict())
 
-@router.patch("/{ticket_number}/status")
+@router.patch("/{ticket_number}/status", response_model=TicketResponse)
 async def update_ticket_status(
     ticket_number: str,
-    status: str,
+    status_update: StatusUpdateRequest,
     db: Session = Depends(get_db)
 ):
     """Update ticket status"""
-
-    if status not in ["Open", "In Progress", "Closed"]:
-        raise HTTPException(status_code=400, detail="Invalid status")
 
     ticket = db.query(Ticket).filter(Ticket.ticket_number == ticket_number).first()
 
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
 
-    ticket.status = status
+    ticket.status = status_update.status
     ticket.updated_at = datetime.utcnow()
     db.commit()
     db.refresh(ticket)
 
     return TicketResponse(**ticket.to_dict())
+
+@router.post("/{ticket_number}/comments", response_model=CommentResponse)
+async def add_comment(
+    ticket_number: str,
+    comment: CommentCreate,
+    db: Session = Depends(get_db)
+):
+    """Add a comment to a ticket"""
+
+    ticket = db.query(Ticket).filter(Ticket.ticket_number == ticket_number).first()
+
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+
+    db_comment = Comment(
+        ticket_id=ticket.id,
+        author_name=comment.author_name,
+        comment_text=comment.comment_text
+    )
+
+    db.add(db_comment)
+
+    # Update ticket's updated_at timestamp
+    ticket.updated_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(db_comment)
+
+    return CommentResponse(**db_comment.to_dict())
+
+@router.get("/{ticket_number}/comments", response_model=CommentsListResponse)
+async def get_comments(
+    ticket_number: str,
+    db: Session = Depends(get_db)
+):
+    """Get all comments for a ticket"""
+
+    ticket = db.query(Ticket).filter(Ticket.ticket_number == ticket_number).first()
+
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+
+    comments = db.query(Comment).filter(Comment.ticket_id == ticket.id).order_by(Comment.created_at.desc()).all()
+
+    return CommentsListResponse(
+        total=len(comments),
+        comments=[CommentResponse(**comment.to_dict()) for comment in comments]
+    )

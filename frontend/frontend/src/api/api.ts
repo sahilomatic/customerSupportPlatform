@@ -98,3 +98,26 @@ export const getTicket = async (ticketNumber: string) => {
   const response = await api.get(`/api/v1/tickets/${ticketNumber}`);
   return response.data;
 };
+
+// 🔄 Update ticket status
+export const updateTicketStatus = async (ticketNumber: string, status: string) => {
+  const response = await api.patch(`/api/v1/tickets/${ticketNumber}/status`, {
+    status: status,
+  });
+  return response.data;
+};
+
+// 💬 Add comment to a ticket
+export const addComment = async (ticketNumber: string, authorName: string, commentText: string) => {
+  const response = await api.post(`/api/v1/tickets/${ticketNumber}/comments`, {
+    author_name: authorName,
+    comment_text: commentText,
+  });
+  return response.data;
+};
+
+// 📝 Get all comments for a ticket
+export const getComments = async (ticketNumber: string) => {
+  const response = await api.get(`/api/v1/tickets/${ticketNumber}/comments`);
+  return response.data;
+};

@@ -33,7 +33,11 @@ import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import { getTickets } from "../api/api";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import CommentIcon from "@mui/icons-material/Comment";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { getTickets, updateTicketStatus, addComment, getComments } from "../api/api";
 
 interface Ticket {
   id: number;
@@ -50,6 +54,14 @@ interface Ticket {
   updated_at: string;
 }
 
+interface Comment {
+  id: number;
+  ticket_id: number;
+  author_name: string;
+  comment_text: string;
+  created_at: string;
+}
+
 const ViewTickets: React.FC = () => {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [filteredTickets, setFilteredTickets] = useState<Ticket[]>([]);
@@ -59,6 +71,10 @@ const ViewTickets: React.FC = () => {
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [detailsDialog, setDetailsDialog] = useState(false);
 
+  // Sorting state
+  const [sortField, setSortField] = useState<"created_at" | "status" | null>("created_at");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+
   // Column-level filters
   const [columnFilters, setColumnFilters] = useState({
     ticketNumber: "",
@@ -66,6 +82,16 @@ const ViewTickets: React.FC = () => {
     mobile: "",
     eventDate: "",
   });
+
+  // Comments state
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState("");
+  const [authorName, setAuthorName] = useState("");
+  const [loadingComments, setLoadingComments] = useState(false);
+  const [submittingComment, setSubmittingComment] = useState(false);
+
+  // Status update state
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const fetchTickets = async () => {
     setLoading(true);
@@ -126,8 +152,29 @@ const ViewTickets: React.FC = () => {
       );
     }
 
+    // Apply sorting
+    if (sortField) {
+      filtered = [...filtered].sort((a, b) => {
+        let compareValue = 0;
+
+        if (sortField === "created_at") {
+          compareValue = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        } else if (sortField === "status") {
+          // Define status order: Open > In Progress > Closed
+          const statusOrder: Record<string, number> = {
+            "Open": 1,
+            "In Progress": 2,
+            "Closed": 3,
+          };
+          compareValue = (statusOrder[a.status] || 999) - (statusOrder[b.status] || 999);
+        }
+
+        return sortDirection === "asc" ? compareValue : -compareValue;
+      });
+    }
+
     setFilteredTickets(filtered);
-  }, [searchTerm, statusFilter, tickets, columnFilters]);
+  }, [searchTerm, statusFilter, tickets, columnFilters, sortField, sortDirection]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -162,14 +209,95 @@ const ViewTickets: React.FC = () => {
     });
   };
 
-  const handleViewDetails = (ticket: Ticket) => {
+  const handleViewDetails = async (ticket: Ticket) => {
     setSelectedTicket(ticket);
     setDetailsDialog(true);
+    setNewComment("");
+    setAuthorName("");
+
+    // Load comments
+    await loadComments(ticket.ticket_number);
   };
 
   const handleCloseDetails = () => {
     setDetailsDialog(false);
     setSelectedTicket(null);
+    setComments([]);
+    setNewComment("");
+    setAuthorName("");
+  };
+
+  const loadComments = async (ticketNumber: string) => {
+    setLoadingComments(true);
+    try {
+      const result = await getComments(ticketNumber);
+      setComments(result.comments);
+    } catch (error) {
+      console.error("Failed to load comments:", error);
+    } finally {
+      setLoadingComments(false);
+    }
+  };
+
+  const handleAddComment = async () => {
+    if (!selectedTicket || !authorName.trim() || !newComment.trim()) {
+      return;
+    }
+
+    setSubmittingComment(true);
+    try {
+      await addComment(selectedTicket.ticket_number, authorName, newComment);
+      setNewComment("");
+      setAuthorName("");
+      await loadComments(selectedTicket.ticket_number);
+    } catch (error) {
+      console.error("Failed to add comment:", error);
+      alert("Failed to add comment. Please try again.");
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
+
+  const handleStatusUpdate = async (newStatus: string) => {
+    if (!selectedTicket) return;
+
+    setUpdatingStatus(true);
+    try {
+      await updateTicketStatus(selectedTicket.ticket_number, newStatus);
+
+      // Update local state
+      setSelectedTicket({ ...selectedTicket, status: newStatus });
+
+      // Refresh ticket list
+      await fetchTickets();
+
+      alert(`Ticket status updated to ${newStatus}`);
+    } catch (error) {
+      console.error("Failed to update status:", error);
+      alert("Failed to update ticket status. Please try again.");
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const handleSort = (field: "created_at" | "status") => {
+    if (sortField === field) {
+      // Toggle direction if same field
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      // New field, default to descending
+      setSortField(field);
+      setSortDirection("desc");
+    }
+  };
+
+  const renderSortIcon = (field: "created_at" | "status") => {
+    if (sortField !== field) return null;
+    return sortDirection === "asc" ? (
+      <ArrowUpwardIcon sx={{ fontSize: 16, ml: 0.5 }} />
+    ) : (
+      <ArrowDownwardIcon sx={{ fontSize: 16, ml: 0.5 }} />
+    );
   };
 
   return (
@@ -254,8 +382,24 @@ const ViewTickets: React.FC = () => {
                 <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
                 <TableCell sx={{ fontWeight: "bold" }}>Mobile</TableCell>
                 <TableCell sx={{ fontWeight: "bold" }}>Event Date</TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}>Created</TableCell>
+                <TableCell
+                  sx={{ fontWeight: "bold", cursor: "pointer", userSelect: "none" }}
+                  onClick={() => handleSort("status")}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                    Status
+                    {renderSortIcon("status")}
+                  </Box>
+                </TableCell>
+                <TableCell
+                  sx={{ fontWeight: "bold", cursor: "pointer", userSelect: "none" }}
+                  onClick={() => handleSort("created_at")}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                    Created
+                    {renderSortIcon("created_at")}
+                  </Box>
+                </TableCell>
                 <TableCell sx={{ fontWeight: "bold" }}>Actions</TableCell>
               </TableRow>
               {/* Column-level filter row */}
@@ -431,6 +575,45 @@ const ViewTickets: React.FC = () => {
                     </Typography>
                   </Paper>
                 </Grid>
+
+                {/* Status Update Section */}
+                <Grid size={12}>
+                  <Paper sx={{ p: 2, backgroundColor: "#fff3e0" }}>
+                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: "bold" }}>
+                      Update Status
+                    </Typography>
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                      <Button
+                        size="small"
+                        variant={selectedTicket.status === "Open" ? "contained" : "outlined"}
+                        color="error"
+                        disabled={updatingStatus || selectedTicket.status === "Open"}
+                        onClick={() => handleStatusUpdate("Open")}
+                      >
+                        Open
+                      </Button>
+                      <Button
+                        size="small"
+                        variant={selectedTicket.status === "In Progress" ? "contained" : "outlined"}
+                        color="warning"
+                        disabled={updatingStatus || selectedTicket.status === "In Progress"}
+                        onClick={() => handleStatusUpdate("In Progress")}
+                      >
+                        In Progress
+                      </Button>
+                      <Button
+                        size="small"
+                        variant={selectedTicket.status === "Closed" ? "contained" : "outlined"}
+                        color="success"
+                        disabled={updatingStatus || selectedTicket.status === "Closed"}
+                        onClick={() => handleStatusUpdate("Closed")}
+                        startIcon={<CheckCircleIcon />}
+                      >
+                        Closed
+                      </Button>
+                    </Box>
+                  </Paper>
+                </Grid>
                 <Grid size={6}>
                   <Typography variant="caption" color="text.secondary">
                     Name
@@ -488,6 +671,75 @@ const ViewTickets: React.FC = () => {
                     Last Updated
                   </Typography>
                   <Typography variant="body2">{formatDate(selectedTicket.updated_at)}</Typography>
+                </Grid>
+
+                {/* Comments Section */}
+                <Grid size={12}>
+                  <Paper sx={{ p: 2, backgroundColor: "#e3f2fd", mt: 2 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+                      <CommentIcon color="primary" />
+                      <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
+                        Comments ({comments.length})
+                      </Typography>
+                    </Box>
+
+                    {/* Add Comment Form */}
+                    <Box sx={{ mb: 2 }}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label="Your Name"
+                        value={authorName}
+                        onChange={(e) => setAuthorName(e.target.value)}
+                        sx={{ mb: 1 }}
+                      />
+                      <TextField
+                        fullWidth
+                        multiline
+                        rows={2}
+                        size="small"
+                        label="Add a comment..."
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                      />
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={handleAddComment}
+                        disabled={submittingComment || !authorName.trim() || !newComment.trim()}
+                        sx={{ mt: 1 }}
+                      >
+                        {submittingComment ? "Adding..." : "Add Comment"}
+                      </Button>
+                    </Box>
+
+                    {/* Comments List */}
+                    {loadingComments ? (
+                      <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
+                        <CircularProgress size={24} />
+                      </Box>
+                    ) : comments.length === 0 ? (
+                      <Typography variant="body2" color="text.secondary" sx={{ textAlign: "center", py: 2 }}>
+                        No comments yet
+                      </Typography>
+                    ) : (
+                      <Box sx={{ maxHeight: 300, overflowY: "auto" }}>
+                        {comments.map((comment) => (
+                          <Paper key={comment.id} sx={{ p: 1.5, mb: 1, backgroundColor: "white" }}>
+                            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
+                              <Typography variant="subtitle2" sx={{ fontWeight: "bold", color: "primary.main" }}>
+                                {comment.author_name}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {formatDate(comment.created_at)}
+                              </Typography>
+                            </Box>
+                            <Typography variant="body2">{comment.comment_text}</Typography>
+                          </Paper>
+                        ))}
+                      </Box>
+                    )}
+                  </Paper>
                 </Grid>
               </Grid>
             </DialogContent>
