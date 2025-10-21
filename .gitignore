@@ -1,5 +1,7 @@
 # Ignore environment variables files
+backend/.env
 backend/app/.env
+.env
 
 # Node dependencies lock file (optional)
 # Usually, it's recommended to commit package-lock.json, but if you want to ignore:
@@ -15,3 +17,14 @@ dist/
 # OS specific files (optional)
 .DS_Store
 Thumbs.db
+
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# SQLite database files
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
