@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1 import whatsapp, sms, tickets
+from app.api.v1 import whatsapp, sms, tickets, auth
 
 api_v1_router = APIRouter()
 
@@ -19,4 +19,10 @@ api_v1_router.include_router(
     tickets.router,
     prefix="/tickets",
     tags=["Tickets"]
+)
+
+api_v1_router.include_router(
+    auth.router,
+    prefix="/auth",
+    tags=["Authentication"]
 )

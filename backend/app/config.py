@@ -34,6 +34,11 @@ class Settings(BaseSettings):
     GDRIVE_LINK: str = "https://drive.google.com/drive/folders/1acrdWqZU6UXjp5UK5Rr8c08hup6T9BYG?usp=drive_link"
     GDRIVE_ALIAS: str = "Upload Your Event Photos/Videos Here"
 
+    # JWT Authentication
+    JWT_SECRET_KEY: str = "your-secret-key-change-this-in-production"
+    JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 480
+
     class Config:
         env_file = str(BASE_DIR / ".env")
         env_file_encoding = 'utf-8'

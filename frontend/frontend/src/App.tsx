@@ -5,7 +5,9 @@ import AppHeader from "./components/AppHeader";
 import WhatsappMessenger from "./components/WhatsappMessenger";
 import RaiseTicket from "./components/RaiseTicket";
 import ViewTickets from "./components/ViewTickets";
-import Login from "./components/Login";
+import StaffLogin from "./components/StaffLogin";
+import StaffRegister from "./components/StaffRegister";
+import AdminPanel from "./components/AdminPanel";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Box } from "@mui/material";
 
@@ -26,8 +28,12 @@ const App: React.FC = () => {
               }
             />
 
-            {/* Login route */}
-            <Route path="/login" element={<Login />} />
+            {/* Staff Authentication routes */}
+            <Route path="/staff-login" element={<StaffLogin />} />
+            <Route path="/staff-register" element={<StaffRegister />} />
+
+            {/* Legacy login route - redirects to staff-login */}
+            <Route path="/login" element={<Navigate to="/staff-login" replace />} />
 
             {/* Protected routes */}
             <Route
@@ -45,6 +51,15 @@ const App: React.FC = () => {
                 <ProtectedRoute>
                   <AppHeader />
                   <ViewTickets />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <AppHeader />
+                  <AdminPanel />
                 </ProtectedRoute>
               }
             />

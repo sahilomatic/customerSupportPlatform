@@ -24,12 +24,13 @@ import ListAltIcon from "@mui/icons-material/ListAlt";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 import Logo from "../assets/sonipixeLogo2.png";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import { useAuth } from "../contexts/AuthContext";
 
 const AppHeader: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -40,12 +41,12 @@ const AppHeader: React.FC = () => {
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/staff-login");
     setDrawerOpen(false);
   };
 
   const handleLogin = () => {
-    navigate("/login");
+    navigate("/staff-login");
     setDrawerOpen(false);
   };
 
@@ -60,6 +61,7 @@ const AppHeader: React.FC = () => {
     { label: "Raise Ticket", icon: <ConfirmationNumberIcon />, path: "/", showAlways: true },
     { label: "Messenger", icon: <WhatsAppIcon />, path: "/messenger", showAlways: false },
     { label: "View Tickets", icon: <ListAltIcon />, path: "/view-tickets", showAlways: false },
+    { label: "Admin Panel", icon: <AdminPanelSettingsIcon />, path: "/admin", showAlways: false, adminOnly: true },
   ];
 
   return (
@@ -99,8 +101,11 @@ const AppHeader: React.FC = () => {
             >
               <Box sx={{ width: 250, pt: 2 }}>
                 <List>
-                  {menuItems.map((item) => (
-                    (item.showAlways || isAuthenticated) && (
+                  {menuItems.map((item) => {
+                    const shouldShow = item.showAlways ||
+                      (isAuthenticated && (!item.adminOnly || user?.role === "admin"));
+
+                    return shouldShow ? (
                       <ListItem
                         key={item.path}
                         onClick={() => handleNavigate(item.path)}
@@ -113,8 +118,8 @@ const AppHeader: React.FC = () => {
                         <ListItemIcon>{item.icon}</ListItemIcon>
                         <ListItemText primary={item.label} />
                       </ListItem>
-                    )
-                  ))}
+                    ) : null;
+                  })}
                   <ListItem
                     onClick={isAuthenticated ? handleLogout : handleLogin}
                     sx={{
@@ -169,6 +174,15 @@ const AppHeader: React.FC = () => {
                     iconPosition="start"
                     label="View Tickets"
                     value="/view-tickets"
+                    sx={{ color: "white", minHeight: 64 }}
+                  />
+                )}
+                {isAuthenticated && user?.role === "admin" && (
+                  <Tab
+                    icon={<AdminPanelSettingsIcon />}
+                    iconPosition="start"
+                    label="Admin Panel"
+                    value="/admin"
                     sx={{ color: "white", minHeight: 64 }}
                   />
                 )}
