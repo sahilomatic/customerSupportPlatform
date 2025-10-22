@@ -23,7 +23,7 @@ def create_app() -> FastAPI:
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",  # local dev
-        "https://sahilomatic.github.io/customerSupportPlatform/",  # deployed frontend
+        "https://sahilomatic.github.io",  # deployed frontend
     ],
     allow_credentials=True,
     allow_methods=["*"],

@@ -16,13 +16,14 @@ import {
   DialogContent,
   DialogActions,
 } from "@mui/material";
-import { Grid } from "@mui/material"; 
+import { Grid } from "@mui/material";
 import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
 import SendIcon from "@mui/icons-material/Send";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import InfoIcon from "@mui/icons-material/Info";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { createTicket } from "../api/api";
+import config from "../config/config";
 
 const RaiseTicket: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -141,8 +142,9 @@ const RaiseTicket: React.FC = () => {
     });
   };
 
-  const gdriveLink = "https://drive.google.com/drive/folders/1acrdWqZU6UXjp5UK5Rr8c08hup6T9BYG?usp=drive_link";
-  const gdriveAlias = "Please download digital pictures from G-drive"
+  // Get Google Drive configuration from central config
+  const gdriveLink = config.gDrive.link;
+  const gdriveAlias = config.gDrive.alias;
 
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>

@@ -22,15 +22,16 @@ import UploadFileIcon from "@mui/icons-material/UploadFile";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import SmsIcon from "@mui/icons-material/Sms";
 import { sendSingleMessage, sendBulkMessages, sendSingleSMS, sendBulkSMS } from "../api/api";
+import config from "../config/config";
 
 const WhatsappMessenger: React.FC = () => {
   const [messageType, setMessageType] = useState<"whatsapp" | "sms">("whatsapp");
   const [tabValue, setTabValue] = useState(0);
   const [mobileNumber, setMobileNumber] = useState("");
-  const [singleMessage, setSingleMessage] = useState("");
+  const [singleMessage, setSingleMessage] = useState(config.messages.defaultMessage);
   const [singleMedia, setSingleMedia] = useState<File[]>([]);
   const [bulkFile, setBulkFile] = useState<File | null>(null);
-  const [bulkMessage, setBulkMessage] = useState("");
+  const [bulkMessage, setBulkMessage] = useState(config.messages.defaultMessage);
   const [bulkMedia, setBulkMedia] = useState<File[]>([]);
 
   const [results, setResults] = useState<
