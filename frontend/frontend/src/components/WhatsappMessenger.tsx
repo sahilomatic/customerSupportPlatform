@@ -126,16 +126,17 @@ const WhatsappMessenger: React.FC = () => {
   return (
     <Box
       sx={{
-        width: "80%",
+        width: { xs: "100%", sm: "95%", md: "85%", lg: "80%" },
         mx: "auto",
-        mt: 4,
+        mt: { xs: 2, sm: 3, md: 4 },
+        mb: { xs: 2, sm: 3, md: 4 },
         bgcolor: "#fff",
-        p: 4,
+        p: { xs: 2, sm: 3, md: 4 },
         borderRadius: 2,
         boxShadow: 2,
       }}
     >
-      <Typography variant="h6" sx={{ flexGrow: 1, mb: 2 }}>
+      <Typography variant="h6" sx={{ flexGrow: 1, mb: 2, fontSize: { xs: "1.1rem", sm: "1.25rem" } }}>
         Multi-Channel Messenger
       </Typography>
 

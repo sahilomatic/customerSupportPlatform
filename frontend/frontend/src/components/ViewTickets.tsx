@@ -27,8 +27,11 @@ import {
   DialogActions,
   Button,
   Tooltip,
+  useMediaQuery,
+  useTheme,
+  CardActions,
 } from "@mui/material";
-import { Grid } from "@mui/material"; 
+import { Grid } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -37,6 +40,9 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import CommentIcon from "@mui/icons-material/Comment";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import PhoneIcon from "@mui/icons-material/Phone";
+import EventIcon from "@mui/icons-material/Event";
+import PersonIcon from "@mui/icons-material/Person";
 import { getTickets, updateTicketStatus, addComment, getComments } from "../api/api";
 
 interface Ticket {
@@ -63,6 +69,9 @@ interface Comment {
 }
 
 const ViewTickets: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [filteredTickets, setFilteredTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(false);
@@ -301,15 +310,15 @@ const ViewTickets: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
+    <Container maxWidth="xl" sx={{ mt: { xs: 2, sm: 3, md: 4 }, mb: { xs: 2, sm: 3, md: 4 }, px: { xs: 1, sm: 2, md: 3 } }}>
       <Paper
         elevation={3}
         sx={{
-          p: 3,
+          p: { xs: 2, sm: 2.5, md: 3 },
           borderRadius: 2,
           background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           color: "white",
-          mb: 3,
+          mb: { xs: 2, sm: 2.5, md: 3 },
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -373,7 +382,66 @@ const ViewTickets: React.FC = () => {
         <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
           <CircularProgress />
         </Box>
+      ) : isMobile ? (
+        /* Mobile Card View */
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {filteredTickets.length === 0 ? (
+            <Paper sx={{ p: 4, textAlign: "center" }}>
+              <Typography color="text.secondary">No tickets found</Typography>
+            </Paper>
+          ) : (
+            filteredTickets.map((ticket) => (
+              <Card key={ticket.id} elevation={2}>
+                <CardContent>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ fontFamily: "monospace", fontWeight: "bold", color: "primary.main" }}
+                    >
+                      {ticket.ticket_number}
+                    </Typography>
+                    <Chip
+                      label={ticket.status}
+                      color={getStatusColor(ticket.status) as any}
+                      size="small"
+                    />
+                  </Box>
+
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                    <PersonIcon sx={{ fontSize: 18, color: "text.secondary" }} />
+                    <Typography variant="body2"><strong>{ticket.name}</strong></Typography>
+                  </Box>
+
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                    <PhoneIcon sx={{ fontSize: 18, color: "text.secondary" }} />
+                    <Typography variant="body2">{ticket.mobile_number}</Typography>
+                  </Box>
+
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                    <EventIcon sx={{ fontSize: 18, color: "text.secondary" }} />
+                    <Typography variant="body2">{formatEventDate(ticket.event_date)}</Typography>
+                  </Box>
+
+                  <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
+                    Created: {formatDate(ticket.created_at)}
+                  </Typography>
+                </CardContent>
+                <CardActions sx={{ justifyContent: "flex-end", pt: 0 }}>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    startIcon={<VisibilityIcon />}
+                    onClick={() => handleViewDetails(ticket)}
+                  >
+                    View Details
+                  </Button>
+                </CardActions>
+              </Card>
+            ))
+          )}
+        </Box>
       ) : (
+        /* Desktop Table View */
         <TableContainer component={Paper} elevation={3}>
           <Table>
             <TableHead>
@@ -546,6 +614,7 @@ const ViewTickets: React.FC = () => {
         onClose={handleCloseDetails}
         maxWidth="md"
         fullWidth
+        fullScreen={isMobile}
       >
         {selectedTicket && (
           <>
